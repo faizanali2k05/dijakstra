@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pathfinding Visualizer – Dijkstra & A*</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <h1>Pathfinding Visualizer – Dijkstra &amp; A*</h1>
+
+    <div class="controls">
+      <div class="row">
+        <label for="algorithmSelect">Algorithm:</label>
+        <select id="algorithmSelect">
+          <option value="dijkstra">Dijkstra's Algorithm</option>
+          <option value="astar">A* Algorithm</option>
+        </select>
+
+        <label class="checkbox">
+          <input type="checkbox" id="diagonalCheckbox" checked />
+          Allow diagonal movement
+        </label>
+
+        <button id="runButton">Run Algorithm</button>
+        <button id="resetButton">Reset (clear walls & paths)</button>
+      </div>
+
+      <div class="row">
+        <span>Speed:</span>
+        <input type="range" id="speedSlider" min="0" max="100" value="60" />
+        <span class="speed-labels">
+          <span>Slow</span>
+          <span>Fast</span>
+        </span>
+      </div>
+
+      <div class="row tools">
+        <span>Tool:</span>
+        <label>
+          <input type="radio" name="tool" value="wall" checked />
+          Draw walls
+        </label>
+        <label>
+          <input type="radio" name="tool" value="moveStart" />
+          Move start
+        </label>
+        <label>
+          <input type="radio" name="tool" value="moveEnd" />
+          Move end
+        </label>
+        <button id="placeEndAndRunButton">Place end node &amp; run</button>
+      </div>
+
+      <p class="hint">
+        Left-click to use the selected tool. Drag to draw walls.  
+        "Place end node &amp; run" will wait for your click on the grid to set
+        the end node, then immediately find the shortest path.
+      </p>
+
+      <div id="stats" class="stats">
+        Algorithm: — | Nodes visited: — | Path: —
+      </div>
+    </div>
+
+    <div class="main">
+      <div id="grid" class="grid"></div>
+
+      <div class="tables">
+        <div class="table-block">
+          <h2>Distance Table (from start)</h2>
+          <div id="distanceTable" class="table-container"></div>
+        </div>
+
+        <div class="table-block">
+          <h2>Predecessor Table</h2>
+          <div id="predecessorTable" class="table-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

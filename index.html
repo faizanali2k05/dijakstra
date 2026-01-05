@@ -1,85 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Pathfinding Visualizer – Dijkstra & A*</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijkstra's Algorithm Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <div class="app">
-    <h1>Pathfinding Visualizer – Dijkstra &amp; A*</h1>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-route"></i> Dijkstra's Algorithm Visualizer</h1>
+            <p class="subtitle">Find the shortest path in a weighted graph</p>
+        </header>
 
-    <div class="controls">
-      <div class="row">
-        <label for="algorithmSelect">Algorithm:</label>
-        <select id="algorithmSelect">
-          <option value="dijkstra">Dijkstra's Algorithm</option>
-          <option value="astar">A* Algorithm</option>
-        </select>
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="controls">
+                    <h3><i class="fas fa-sliders-h"></i> Controls</h3>
+                    
+                    <div class="control-group">
+                        <label for="speed">Animation Speed:</label>
+                        <input type="range" id="speed" min="1" max="10" value="5">
+                        <span id="speed-value">Medium</span>
+                    </div>
 
-        <label class="checkbox">
-          <input type="checkbox" id="diagonalCheckbox" checked />
-          Allow diagonal movement
-        </label>
+                    <div class="button-group">
+                        <button id="add-node" class="btn"><i class="fas fa-plus-circle"></i> Add Node</button>
+                        <button id="add-edge" class="btn"><i class="fas fa-link"></i> Add Edge</button>
+                        <button id="clear" class="btn btn-clear"><i class="fas fa-trash"></i> Clear All</button>
+                    </div>
 
-        <button id="runButton">Run Algorithm</button>
-        <button id="resetButton">Reset (clear walls & paths)</button>
-      </div>
+                    <div class="control-group">
+                        <label>Start Node:</label>
+                        <select id="start-node">
+                            <option value="">Select start node</option>
+                        </select>
+                    </div>
 
-      <div class="row">
-        <span>Speed:</span>
-        <input type="range" id="speedSlider" min="0" max="100" value="60" />
-        <span class="speed-labels">
-          <span>Slow</span>
-          <span>Fast</span>
-        </span>
-      </div>
+                    <div class="control-group">
+                        <label>End Node:</label>
+                        <select id="end-node">
+                            <option value="">Select end node</option>
+                        </select>
+                    </div>
 
-      <div class="row tools">
-        <span>Tool:</span>
-        <label>
-          <input type="radio" name="tool" value="wall" checked />
-          Draw walls
-        </label>
-        <label>
-          <input type="radio" name="tool" value="moveStart" />
-          Move start
-        </label>
-        <label>
-          <input type="radio" name="tool" value="moveEnd" />
-          Move end
-        </label>
-        <button id="placeEndAndRunButton">Place end node &amp; run</button>
-      </div>
+                    <button id="run" class="btn btn-run"><i class="fas fa-play"></i> Run Dijkstra</button>
+                    <button id="step" class="btn"><i class="fas fa-step-forward"></i> Step Through</button>
+                    <button id="reset" class="btn"><i class="fas fa-redo"></i> Reset</button>
+                </div>
 
-      <p class="hint">
-        Left-click to use the selected tool. Drag to draw walls.  
-        "Place end node &amp; run" will wait for your click on the grid to set
-        the end node, then immediately find the shortest path.
-      </p>
+                <div class="explanation">
+                    <h3><i class="fas fa-lightbulb"></i> How Dijkstra Works</h3>
+                    <div class="steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <p>Start with all nodes having infinite distance except source (0)</p>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <p>Always visit the unvisited node with smallest known distance</p>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <p>Update neighbors' distances if shorter path found</p>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <p>Mark node as visited and repeat until destination reached</p>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">5</span>
+                            <p>Trace back from destination to source for shortest path</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-      <div id="stats" class="stats">
-        Algorithm: — | Nodes visited: — | Path: —
-      </div>
-    </div>
+            <div class="right-panel">
+                <div class="canvas-container">
+                    <canvas id="graph-canvas"></canvas>
+                    <div class="status" id="status">Ready to draw nodes and edges</div>
+                </div>
 
-    <div class="main">
-      <div id="grid" class="grid"></div>
-
-      <div class="tables">
-        <div class="table-block">
-          <h2>Distance Table (from start)</h2>
-          <div id="distanceTable" class="table-container"></div>
+                <div class="info-panel">
+                    <div class="info-box">
+                        <h4><i class="fas fa-info-circle"></i> Current Status</h4>
+                        <div id="current-step">Waiting for input...</div>
+                        <div id="distance-display">Total distance: -</div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h4><i class="fas fa-list"></i> Node Distances</h4>
+                        <div id="distances-list"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="table-block">
-          <h2>Predecessor Table</h2>
-          <div id="predecessorTable" class="table-container"></div>
-        </div>
-      </div>
+        <footer>
+            <p>Click to place nodes, drag between nodes to create weighted edges</p>
+            <p>Hosted on Netlify • Dijkstra's Algorithm Visualization</p>
+        </footer>
     </div>
-  </div>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

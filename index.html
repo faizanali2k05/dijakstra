@@ -25,6 +25,12 @@
                         <span id="speed-value">Medium</span>
                     </div>
 
+                    <div class="control-group">
+                        <label for="edge-weight">Edge Weight:</label>
+                        <input type="number" id="edge-weight" min="1" max="999" value="10">
+                        <span class="hint">Used when you connect two nodes</span>
+                    </div>
+
                     <div class="mode-buttons">
                         <button id="add-node-btn" class="btn mode-btn active">
                             <i class="fas fa-plus-circle"></i> Add Node
@@ -118,8 +124,8 @@
                 <div class="canvas-container">
                     <canvas id="graph-canvas"></canvas>
                     <div class="instructions" id="instructions">
-                        <p><i class="fas fa-mouse-pointer"></i> Click anywhere to add nodes</p>
-                        <p><i class="fas fa-link"></i> Select "Add Edge" mode, then click two nodes</p>
+                        <p><i class="fas fa-mouse-pointer"></i> Click or tap anywhere to add nodes</p>
+                        <p><i class="fas fa-link"></i> Select "Add Edge" mode, then tap two nodes</p>
                     </div>
                     <div class="status" id="status">Ready - Click "Add Node" to start</div>
                 </div>

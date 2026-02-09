@@ -6,11 +6,14 @@ class GraphVisualizer {
         this.nodes = [];
         this.edges = [];
         this.selectedNode = null;
+        this.hoveredNode = null;
         this.currentMode = 'add-node';
         this.isRunning = false;
         this.algorithmSteps = [];
         this.currentStep = 0;
         this.animationSpeed = 200;
+        this.edgeWeightInput = document.getElementById('edge-weight');
+        this.statusTimeout = null;
         
         this.init();
     }
@@ -34,8 +37,18 @@ class GraphVisualizer {
 
     bindEvents() {
         // Canvas click
-        this.canvas.addEventListener('click', (e) => {
+        this.canvas.addEventListener('pointerdown', (e) => {
             this.handleCanvasClick(e);
+        });
+
+        this.canvas.addEventListener('pointermove', (e) => {
+            this.handlePointerMove(e);
+        });
+
+        this.canvas.addEventListener('pointerleave', () => {
+            this.hoveredNode = null;
+            this.canvas.style.cursor = this.currentMode === 'add-edge' ? 'pointer' : 'crosshair';
+            this.draw();
         });
         
         // Mode buttons
@@ -82,6 +95,12 @@ class GraphVisualizer {
         document.getElementById('end-node').addEventListener('change', () => {
             this.updateDistancesDisplay();
         });
+
+        if (this.edgeWeightInput) {
+            this.edgeWeightInput.addEventListener('input', () => {
+                this.updateStatus(`Edge weight set to ${this.getEdgeWeightValue()}`);
+            });
+        }
     }
 
     setMode(mode) {
@@ -105,6 +124,10 @@ class GraphVisualizer {
     }
 
     handleCanvasClick(e) {
+        if (this.isRunning) {
+            return;
+        }
+
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -113,6 +136,19 @@ class GraphVisualizer {
             this.addNode(x, y);
         } else if (this.currentMode === 'add-edge') {
             this.handleEdgeModeClick(x, y);
+        }
+    }
+
+    handlePointerMove(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const hoveredNode = this.findNodeAt(x, y);
+
+        if (hoveredNode !== this.hoveredNode) {
+            this.hoveredNode = hoveredNode;
+            this.canvas.style.cursor = hoveredNode ? 'pointer' : (this.currentMode === 'add-edge' ? 'pointer' : 'crosshair');
+            this.draw();
         }
     }
 
@@ -143,7 +179,7 @@ class GraphVisualizer {
         
         this.nodes.push(node);
         this.updateNodeSelects();
-        this.updateStatus(`Added node ${id} at (${Math.round(x)}, ${Math.round(y)})`);
+        this.updateStatus(`Nice! Added node ${id}. Keep going or connect edges.`);
         this.draw();
     }
 
@@ -184,17 +220,7 @@ class GraphVisualizer {
             }
         }
         
-        // Get weight from user
-        const weightInput = prompt(`Enter weight for edge ${node1.id}-${node2.id}:`, '10');
-        
-        if (weightInput === null) {
-            // User cancelled
-            this.selectedNode = null;
-            this.updateStatus('Edge creation cancelled');
-            return;
-        }
-        
-        const weight = parseInt(weightInput);
+        const weight = this.getEdgeWeightValue();
         if (isNaN(weight) || weight <= 0) {
             this.updateStatus('Invalid weight. Please enter a positive number.');
             return;
@@ -208,9 +234,18 @@ class GraphVisualizer {
             isPath: false
         });
         
-        this.updateStatus(`Added edge ${node1.id}-${node2.id} with weight ${weight}`);
+        this.updateStatus(`Connected ${node1.id} → ${node2.id} (weight ${weight}).`);
         this.selectedNode = null;
         this.draw();
+    }
+
+    getEdgeWeightValue() {
+        if (!this.edgeWeightInput) {
+            return 10;
+        }
+
+        const rawValue = parseInt(this.edgeWeightInput.value, 10);
+        return Number.isNaN(rawValue) ? 10 : rawValue;
     }
 
     findNodeAt(x, y) {
@@ -275,10 +310,15 @@ class GraphVisualizer {
         this.draw();
     }
 
-    resetVisualization() {
-        this.algorithmSteps = [];
-        this.currentStep = 0;
-        this.isRunning = false;
+    resetVisualization({ preserveRunning = false, preserveSteps = false } = {}) {
+        if (!preserveSteps) {
+            this.algorithmSteps = [];
+            this.currentStep = 0;
+        }
+
+        if (!preserveRunning) {
+            this.isRunning = false;
+        }
         
         // Reset node states
         this.nodes.forEach(node => {
@@ -291,9 +331,11 @@ class GraphVisualizer {
             edge.isPath = false;
         });
         
-        this.updateStatus('Visualization reset');
-        this.updateStepDescription('Not started');
-        this.updateStepCounter(0, 0);
+        this.updateStatus('Visualization reset. Ready for a new run.');
+        if (!preserveSteps) {
+            this.updateStepDescription('Not started');
+            this.updateStepCounter(0, 0);
+        }
         document.getElementById('distance-display').textContent = 'Total distance: -';
         
         this.draw();
@@ -338,10 +380,11 @@ class GraphVisualizer {
         
         // Disable controls during animation
         this.setControlsEnabled(false);
-        this.isRunning = true;
-        
+
         // Reset visualization state
-        this.resetVisualization();
+        this.resetVisualization({ preserveRunning: true });
+
+        this.isRunning = true;
         
         // Run Dijkstra algorithm
         const result = this.dijkstra(startId, endId);
@@ -376,7 +419,7 @@ class GraphVisualizer {
             document.getElementById('distance-display').textContent = `Total distance: ${totalDistance}`;
         } else {
             console.log('No path found');
-            this.updateStatus('No path found between selected nodes');
+            this.updateStatus('No path found yet. Add more edges or adjust weights and try again.');
         }
         
         // Re-enable controls
@@ -482,10 +525,12 @@ class GraphVisualizer {
         
         // Build path from end to start
         const path = [];
-        let currentNode = endId;
-        while (currentNode !== null) {
-            path.unshift(currentNode);
-            currentNode = previous[currentNode];
+        if (distances[endId] !== Infinity) {
+            let currentNode = endId;
+            while (currentNode !== null) {
+                path.unshift(currentNode);
+                currentNode = previous[currentNode];
+            }
         }
         
         console.log('Final path:', path);
@@ -519,6 +564,16 @@ class GraphVisualizer {
         
         if (startId === endId) {
             this.updateStatus('Start and end nodes must be different');
+            return;
+        }
+
+        if (this.nodes.length < 2) {
+            this.updateStatus('Need at least 2 nodes to step through');
+            return;
+        }
+
+        if (this.edges.length === 0) {
+            this.updateStatus('Create at least one edge before stepping');
             return;
         }
         
@@ -652,7 +707,13 @@ class GraphVisualizer {
         
         // Draw nodes
         this.nodes.forEach(node => {
-            const color = this.selectedNode === node ? '#ffd43b' : '#4dabf7';
+            let color = '#4dabf7';
+            if (this.hoveredNode === node) {
+                color = '#74c0fc';
+            }
+            if (this.selectedNode === node) {
+                color = '#ffd43b';
+            }
             this.drawNode(node, color);
         });
         
@@ -712,6 +773,11 @@ class GraphVisualizer {
         const statusElement = document.getElementById('status');
         if (statusElement) {
             statusElement.textContent = message;
+            statusElement.classList.add('highlight');
+            clearTimeout(this.statusTimeout);
+            this.statusTimeout = setTimeout(() => {
+                statusElement.classList.remove('highlight');
+            }, 600);
             console.log('Status:', message);
         }
     }

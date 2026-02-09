@@ -9,6 +9,7 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
+    color: #1f2d3d;
 }
 
 .container {
@@ -28,7 +29,7 @@ header {
 }
 
 header h1 {
-    font-size: 2.5rem;
+    font-size: clamp(1.6rem, 2.2vw, 2.5rem);
     margin-bottom: 10px;
     display: flex;
     align-items: center;
@@ -92,6 +93,26 @@ header h1 {
     outline: none;
 }
 
+.control-group input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.control-group input[type="number"]:focus {
+    border-color: #4dabf7;
+    outline: none;
+}
+
+.hint {
+    display: block;
+    margin-top: 6px;
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
 .control-group input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 20px;
@@ -143,6 +164,11 @@ header h1 {
 .btn:hover {
     background: #339af0;
     transform: translateY(-2px);
+}
+
+.btn:focus-visible {
+    outline: 3px solid rgba(51, 154, 240, 0.5);
+    outline-offset: 2px;
 }
 
 .btn:disabled {
@@ -229,6 +255,12 @@ select:focus {
     font-size: 1rem;
     text-align: center;
     font-weight: 500;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.status.highlight {
+    background: rgba(52, 152, 219, 0.95);
+    transform: translateY(-2px);
 }
 
 .info-panel {
@@ -397,6 +429,31 @@ footer p:first-child {
 }
 
 /* Responsive design */
+@media (max-width: 1200px) {
+    .left-panel {
+        width: 320px;
+    }
+}
+
+@media (max-width: 900px) {
+    body {
+        padding: 12px;
+    }
+
+    .container {
+        border-radius: 16px;
+    }
+
+    header {
+        padding: 20px;
+    }
+
+    .instructions {
+        position: static;
+        margin: 12px;
+    }
+}
+
 @media (max-width: 1024px) {
     .main-content {
         flex-direction: column;
@@ -411,5 +468,35 @@ footer p:first-child {
     .info-panel {
         flex-direction: column;
         height: auto;
+    }
+}
+
+@media (max-width: 720px) {
+    .mode-buttons,
+    .button-group {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    footer p {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 520px) {
+    .left-panel,
+    .right-panel {
+        padding: 18px;
+    }
+
+    .info-box {
+        padding: 16px;
+    }
+
+    .canvas-container {
+        min-height: 360px;
     }
 }

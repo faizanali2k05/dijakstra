@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.DS_Store
+.vscode/
+npm-debug.log*
+package-lock.json
+yarn.lock
+.vite/
